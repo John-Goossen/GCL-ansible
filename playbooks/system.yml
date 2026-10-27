@@ -1,17 +1,43 @@
 ---
-- name: Configure system settings
-  hosts: localhost
-  become: true
+- name: Install automatic update packages
+  ansible.builtin.apt:
+    name:
+      - unattended-upgrades
+      - apt-listchanges
+    state: present
+    update_cache: true
 
-  tasks:
-    - name: Install OpenSSH server
-      ansible.builtin.apt:
-        name: openssh-server
-        state: present
-        update_cache: true
+- name: Enable automatic package list updates
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Download-Upgradeable-Packages "1";
+      APT::Periodic::AutocleanInterval "7";
+      APT::Periodic::Unattended-Upgrade "1";
+    owner: root
+    group: root
+    mode: '0644'
 
-    - name: Enable and start SSH service
-      ansible.builtin.systemd:
-        name: ssh
-        enabled: true
-        state: started
+- name: Configure unattended upgrades
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/50unattended-upgrades
+    content: |
+      Unattended-Upgrade::Allowed-Origins {
+          "${distro_id}:${distro_codename}";
+          "${distro_id}:${distro_codename}-security";
+          "${distro_id}:${distro_codename}-updates";
+      };
+
+      Unattended-Upgrade::Remove-Unused-Dependencies "true";
+      Unattended-Upgrade::Automatic-Reboot "false";
+      Unattended-Upgrade::Automatic-Reboot-Time "03:00";
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable unattended-upgrades service
+  ansible.builtin.systemd:
+    name: unattended-upgrades
+    enabled: true
+    state: started
