@@ -1,27 +1,4 @@
 ---
-- name: Run automated system updates locally via ansible-pull
-  hosts: localhost
-  connection: local
-  gather_facts: true
-
-  tasks:
-    # 1. Update the apt cache to get the latest list of available packages
-    - name: Update apt cache repository index
-      sudo: true
-      apt:
-        update_cache: yes
-      register: apt_update_result
-
-    # 2. Upgrade all installed packages to their newest versions
-    - name: Upgrade all system packages to the latest versions
-      sudo: true
-      apt:
-        upgrade: safe
-      when: apt_update_result is succeeded
-
-    # 3. Clean up unneeded dependencies left over from older software versions
-    - name: Clean up unused packages and old dependencies
-      sudo: true
-      apt:
-        autoremove: yes
-        autoclean: yes
+- import_playbook: playbooks/software.yml
+- import_playbook: playbooks/system.yml
+- import_playbook: playbooks/users.yml
