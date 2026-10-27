@@ -1,0 +1,24 @@
+---
+- name: Create wallpaper directory
+  become: true
+  ansible.builtin.file:
+    path: /usr/local/share/backgrounds
+    state: directory
+    mode: '0755'
+
+- name: Copy wallpaper
+  become: true
+  ansible.builtin.copy:
+    src: files/lab-wallpaper.jpg
+    dest: /usr/local/share/backgrounds/lab-wallpaper.jpg
+    mode: '0644'
+
+- name: Set Cinnamon wallpaper for student
+  become: true
+  become_user: student
+  ansible.builtin.command:
+    cmd: >
+      gsettings set
+      org.cinnamon.desktop.background
+      picture-uri
+      file:///usr/local/share/backgrounds/lab-wallpaper.jpg
