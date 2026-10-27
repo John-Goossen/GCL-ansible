@@ -1,9 +1,7 @@
 ---
 - hosts: localhost
-  connection: local
   become: true
 
-  roles:
-    - chrome
-    - vscode
-    - packages
+  tasks:
+    - import_tasks: ../tasks/chrome.yml
+    - import_tasks: ../tasks/vscode.yml
